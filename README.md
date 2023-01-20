@@ -2,7 +2,7 @@
 
 OSINT investigators wish they could get access to flight records. This tool doesn't do that, but it does show which planes landed and took off on the same day from an airport, which can be useful in offering potentially solutions to who was meeting whom.
 
-It utilises API feeds from Open Sky Network and HexDB.io and applies relational alegbra to the constructed databases, in order to return the details on all aircraft that fit the search criteria.
+It applies relational alegbra to the constructed databases built from the Open Sky Network and HexDB.io APIS, in order to return the details on all aircraft that fit the search criteria.
 
 Naturally, it works best for smaller aiports, due to the more precise traffic. It's also most useful when planes are registered to a specific non-aviation private company or a person.
 
