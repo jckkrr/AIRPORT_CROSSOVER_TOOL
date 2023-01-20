@@ -16,4 +16,6 @@ This script show us that SaxonAir Cessna also arrived from Nice on the 3rd.
 
 ![image](https://user-images.githubusercontent.com/69304112/213689804-64cc197a-5bc8-43ff-a489-7dd34b177403.png)
 
-Both departed on the 7th, giving a possible avenue of further investigation.
+Both departed on the 7th. 
+
+The coincidences may be nothing, but this OSINT tool does give another possible avenue of further investigation in an area where open-source intelligence is scarce.
