@@ -1,6 +1,6 @@
 # Who is flying in to meet each other?
 
-OSINT investigators wish they could get access to flight records. This tool doesn't do that, but it does show which planes landed and took off on the same day from an airport, which can be useful in offering potentially solutions to who was meeting whom.
+OSINT investigators wish they could get access to flight records. This tool doesn't do that, but it does show which planes landed and took off on the same days from an airport, which can be useful in offering potentially solutions to who was meeting whom.
 
 It applies relational alegbra to the constructed databases built from the Open Sky Network and HexDB.io APIS, in order to return the details on all aircraft that fit the search criteria.
 
