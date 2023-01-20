@@ -1,9 +1,9 @@
 # airport_compare
-OSINT investigators wish they could get access to flight records. This doesn't do that, but it does show which planes landed and took off on the same day from an airport.
+OSINT investigators wish they could get access to flight records. This tool doesn't do that, but it does show which planes landed and took off on the same day from an airport, which can be useful in offering potentially solutions to who was meeting whom.
 
-It utilise API feeds from Open Sky Network and HexDB.io, and builds and merges databases to return the details on any aircraft that may have been at a location for a meeting.
+It utilises API feeds from Open Sky Network and HexDB.io and applies relational alegbra to the constructed databases, in order to return the details on all aircraft that fit the search criteria.
 
-Works best for smaller aiports.
+Naturally, it works best for smaller aiports, due to the more precise traffic.
 
 ![image](https://user-images.githubusercontent.com/69304112/213688746-c7d1a282-27f1-4a4a-9c5a-44b6f730070f.png)
 
@@ -15,4 +15,4 @@ This script show us that SaxonAir Cessna also arrived from Nice on the 3rd.
 
 ![image](https://user-images.githubusercontent.com/69304112/213689804-64cc197a-5bc8-43ff-a489-7dd34b177403.png)
 
-Both departed on the 7th, giving a possible avenue of investigation.
+Both departed on the 7th, giving a possible avenue of further investigation.
