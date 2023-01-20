@@ -1,4 +1,5 @@
-# airport_compare
+# Who is flying in to meet whom?
+
 OSINT investigators wish they could get access to flight records. This tool doesn't do that, but it does show which planes landed and took off on the same day from an airport, which can be useful in offering potentially solutions to who was meeting whom.
 
 It utilises API feeds from Open Sky Network and HexDB.io and applies relational alegbra to the constructed databases, in order to return the details on all aircraft that fit the search criteria.
