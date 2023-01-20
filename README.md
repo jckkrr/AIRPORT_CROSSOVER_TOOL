@@ -3,7 +3,7 @@ OSINT investigators wish they could get access to flight records. This tool does
 
 It utilises API feeds from Open Sky Network and HexDB.io and applies relational alegbra to the constructed databases, in order to return the details on all aircraft that fit the search criteria.
 
-Naturally, it works best for smaller aiports, due to the more precise traffic.
+Naturally, it works best for smaller aiports, due to the more precise traffic. It's also most useful when planes are registered to a specific non-aviation private company or a person.
 
 ![image](https://user-images.githubusercontent.com/69304112/213688746-c7d1a282-27f1-4a4a-9c5a-44b6f730070f.png)
 
