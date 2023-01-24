@@ -128,11 +128,9 @@ def comparePlanesDayArrDep(start_epoch, end_epoch, IATA_AIRPORT):
     
     arrivals = openskyTools_getBasicDailyAirportArriveOrDepart(start_epoch, ICAO_AIRPORT, 'arrival')    
     arrivals = arrivals.loc[arrivals['originIcao'] != arrivals['destinationIcao']]  ## to exclude helicopters doing joy flights, for example
-    st.dataframe(arrivals.head(3))    
     
     departures = openskyTools_getBasicDailyAirportArriveOrDepart(end_epoch, ICAO_AIRPORT, 'departure')
     departures = departures.loc[departures['originIcao'] != departures['destinationIcao']]
-    st.dataframe(departures.head(3)) 
         
     callsigns_arr = arrivals['callsign'].to_list()
     callsigns_dep = departures['callsign'].to_list()
