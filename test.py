@@ -77,6 +77,9 @@ def openskyTools_getBasicDailyAirportArriveOrDepart(dayYYYYmmdd, airportIcao, ar
             
     dayEpoch = timeFuncs_returnEpoch(dayYYYYmmdd)
     dateddmm = f'{str(dayYYYYmmdd)[6:8]}/{str(dayYYYYmmdd)[4:6]}/{str(dayYYYYmmdd)[0:4]}'
+    
+    st.write(dayYYYYmmdd)
+    st.write(dateddmm)
         
     url = f'https://opensky-network.org/api/flights/{arrival_or_departure}?airport={airportIcao}&begin={dayEpoch}&end={dayEpoch+86400}'
     
@@ -200,12 +203,12 @@ ICAO_AIRPORT = hexdbioTools_convertIATAtoICAO(IATA_AIRPORT)
 
 st.write(ICAO_AIRPORT)
 
-start_date = st.date_input('Start date', datetime.datetime(2022, 11, 3, 0, 0, 0))
-end_date = st.date_input('End date', datetime.datetime(2022, 11, 7, 0, 0, 0))
-if start_date < end_date:
-    st.success('Start date: `%s`\n\nEnd date:`%s`' % (start_date, end_date))
-else:
-    st.error('Error: End date must fall after start date.')
+#start_date = st.date_input('Start date', datetime.datetime(2022, 11, 3, 0, 0, 0))
+#end_date = st.date_input('End date', datetime.datetime(2022, 11, 7, 0, 0, 0))
+#if start_date < end_date:
+ #   st.success('Start date: `%s`\n\nEnd date:`%s`' % (start_date, end_date))
+#else:
+ #   st.error('Error: End date must fall after start date.')
 
 proceed = st.radio('Ready to go?', ['no','yes'], horizontal=True)
 
