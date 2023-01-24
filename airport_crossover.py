@@ -213,14 +213,14 @@ else:
 start_y, start_m, start_d = int(start_date.strftime('%Y')), int(start_date.strftime('%m')), int(start_date.strftime('%d'))
 end_y, end_m, end_d = int(end_date.strftime('%Y')), int(end_date.strftime('%m')), int(end_date.strftime('%d'))
 
-st.write(start_y, start_m, start_d)
-st.write(end_y, end_m, end_d)
+#st.write(start_y, start_m, start_d)
+#st.write(end_y, end_m, end_d)
 
 start_epoch = int(datetime.datetime(start_y, start_m, start_d, 0, 0, 0, 0, pytz.UTC).timestamp())
 end_epoch = int(datetime.datetime(end_y, end_m, end_d, 0, 0, 0, 0, pytz.UTC).timestamp())
 
-st.write(start_epoch)
-st.write(end_epoch)
+#st.write(start_epoch)
+#st.write(end_epoch)
 
 proceed = st.radio('Ready to go?', ['no','yes'], horizontal=True)
 
