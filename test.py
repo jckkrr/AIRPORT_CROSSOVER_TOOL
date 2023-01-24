@@ -112,11 +112,15 @@ def comparePlanesDayArrDep(arrive_yyyymmdd, depart_yyyymmdd, IATA_AIRPORT):
     ## most people will use a three digit airport code, not the four letter ICAO code, so first job is to covert
     ICAO_AIRPORT = hexdbioTools_convertIATAtoICAO(IATA_AIRPORT)
         
+    st.write(ICAO_AIRPORT)
+        
     # get daily arrival/depart data
     arrivals = openskyTools_getBasicDailyAirportArriveOrDepart(arrive_yyyymmdd, ICAO_AIRPORT, 'arrival')
-    arrivals = arrivals.loc[arrivals['originIcao'] != arrivals['destinationIcao']]  ## to exclude helicopters doing joy flights, for example
-        
     st.dataframe(arrivals)
+    
+    arrivals = arrivals.loc[arrivals['originIcao'] != arrivals['destinationIcao']]  ## to exclude helicopters doing joy flights, for example
+    st.dataframe(arrivals)    
+    
     
     departures = openskyTools_getBasicDailyAirportArriveOrDepart(depart_yyyymmdd, ICAO_AIRPORT, 'departure')
     departures = departures.loc[departures['originIcao'] != departures['destinationIcao']]
