@@ -115,6 +115,9 @@ def comparePlanesDayArrDep(arrive_yyyymmdd, depart_yyyymmdd, IATA_AIRPORT):
     st.write(ICAO_AIRPORT)
         
     # get daily arrival/depart data
+    
+    st.write(arrive_yyyymmdd, ICAO_AIRPORT)
+    
     arrivals = openskyTools_getBasicDailyAirportArriveOrDepart(arrive_yyyymmdd, ICAO_AIRPORT, 'arrival')
     st.dataframe(arrivals)
     
