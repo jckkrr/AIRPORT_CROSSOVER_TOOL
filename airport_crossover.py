@@ -81,7 +81,7 @@ def openskyTools_getBasicDailyAirportArriveOrDepart(dayEpoch, airportIcao, arriv
         
     url = f'https://opensky-network.org/api/flights/{arrival_or_departure}?airport={airportIcao}&begin={dayEpoch}&end={dayEpoch+86400}'
     
-    st.write(url)
+    #st.write(url)
     
     response = requests.request("GET", url) 
         
@@ -92,7 +92,7 @@ def openskyTools_getBasicDailyAirportArriveOrDepart(dayEpoch, airportIcao, arriv
     
         j = response.json()    
         
-        st.write(len(j))
+        #st.write(len(j))
 
         for i in j:
             
