@@ -201,7 +201,10 @@ st.write('Naturally, it works best for smaller aiports, due to the more precise 
 IATA_AIRPORT = st.text_input('Please enter the 3-letter IATA code for the aiport you are interested in: ', 'BQH')
 ICAO_AIRPORT = hexdbioTools_convertIATAtoICAO(IATA_AIRPORT)
 
-st.write('ICAO 24 Hex code fro airport: ', ICAO_AIRPORT)
+dfAIRPORTINFO = hexdbioTools_airportInfo(hexdbioTools_convertIATAtoICAO(IATA_AIRPORT))
+st.dataframe(dfAIRPORTINFO)
+
+#st.write('ICAO 24 Hex code for airport: ', ICAO_AIRPORT)
 
 start_date = st.date_input('Start date', datetime.datetime(2022, 11, 2, 0, 0, 0))
 end_date = st.date_input('End date', datetime.datetime(2022, 11, 7, 0, 0, 0))
