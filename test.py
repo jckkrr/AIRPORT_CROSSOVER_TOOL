@@ -71,27 +71,19 @@ def hexdbioTools_aicraftInfo_multi(list_of_icaohex):
     
     return df 
     
-def openskyTools_getBasicDailyAirportArriveOrDepart(dayYYYYmmdd, airportIcao, arrival_or_departure):
+def openskyTools_getBasicDailyAirportArriveOrDepart(dayEpoch, airportIcao, arrival_or_departure):
     
     df = pd.DataFrame()
-            
-    #dayEpoch = timeFuncs_returnEpoch(dayYYYYmmdd)
-    
-    dayEpoch = int(datetime.datetime.strptime(str(dayYYYYmmdd), "%Y%m%d").timestamp())
-    
-    dateddmm = f'{str(dayYYYYmmdd)[6:8]}/{str(dayYYYYmmdd)[4:6]}/{str(dayYYYYmmdd)[0:4]}'
-    
-    st.write(dayEpoch)
-    st.write(dateddmm)
+                        
+    yyyymmdd = datetime.datetime.fromtimestamp(dayEpoch).strftime('%Y%m%d')
+    dateddmm = datetime.datetime.fromtimestamp(dayEpoch).strftime('%Y/%m/%d') 
         
     url = f'https://opensky-network.org/api/flights/{arrival_or_departure}?airport={airportIcao}&begin={dayEpoch}&end={dayEpoch+86400}'
     
     st.write(url)
     
     response = requests.request("GET", url) 
-    
-    st.write(url)
-    
+        
     if response.status_code != 200:
         print(response)
     
@@ -99,13 +91,11 @@ def openskyTools_getBasicDailyAirportArriveOrDepart(dayYYYYmmdd, airportIcao, ar
     
         j = response.json()    
         
-        st.write(j)
+        st.write(len(j))
 
         for i in j:
             
-            st.write(i)
-
-            df.loc[j.index(i), ['Date', 'Date Epoch']] = [dayYYYYmmdd, dayEpoch] 
+            df.loc[j.index(i), ['yyyymmdd', 'Date', 'Date Epoch']] = [yyyymmdd, dateddmm, dayEpoch] 
 
             for key, val in i.items():
                 if type(val) == str:
@@ -124,7 +114,7 @@ def openskyTools_getBasicDailyAirportArriveOrDepart(dayYYYYmmdd, airportIcao, ar
 
 #### MAIN FUNCTION
 
-def comparePlanesDayArrDep(arrive_yyyymmdd, depart_yyyymmdd, IATA_AIRPORT):
+def comparePlanesDayArrDep(start_epoch, end_epoch, IATA_AIRPORT):
     
     ## most people will use a three digit airport code, not the four letter ICAO code, so first job is to covert
     ICAO_AIRPORT = hexdbioTools_convertIATAtoICAO(IATA_AIRPORT)
@@ -133,17 +123,15 @@ def comparePlanesDayArrDep(arrive_yyyymmdd, depart_yyyymmdd, IATA_AIRPORT):
         
     # get daily arrival/depart data
     
-    st.write(arrive_yyyymmdd, ICAO_AIRPORT)
+    st.write(start_epoch, ICAO_AIRPORT)
     
-    arrivals = openskyTools_getBasicDailyAirportArriveOrDepart(arrive_yyyymmdd, ICAO_AIRPORT, 'arrival')
-    st.dataframe(arrivals)
-    
+    arrivals = openskyTools_getBasicDailyAirportArriveOrDepart(start_epoch, ICAO_AIRPORT, 'arrival')    
     arrivals = arrivals.loc[arrivals['originIcao'] != arrivals['destinationIcao']]  ## to exclude helicopters doing joy flights, for example
-    st.dataframe(arrivals)    
+    st.dataframe(arrivals.head(3))    
     
-    
-    departures = openskyTools_getBasicDailyAirportArriveOrDepart(depart_yyyymmdd, ICAO_AIRPORT, 'departure')
+    departures = openskyTools_getBasicDailyAirportArriveOrDepart(end_epoch, ICAO_AIRPORT, 'departure')
     departures = departures.loc[departures['originIcao'] != departures['destinationIcao']]
+    st.dataframe(departures.head(3)) 
         
     callsigns_arr = arrivals['callsign'].to_list()
     callsigns_dep = departures['callsign'].to_list()
@@ -206,12 +194,24 @@ ICAO_AIRPORT = hexdbioTools_convertIATAtoICAO(IATA_AIRPORT)
 
 st.write(ICAO_AIRPORT)
 
-#start_date = st.date_input('Start date', datetime.datetime(2022, 11, 3, 0, 0, 0))
-#end_date = st.date_input('End date', datetime.datetime(2022, 11, 7, 0, 0, 0))
-#if start_date < end_date:
- #   st.success('Start date: `%s`\n\nEnd date:`%s`' % (start_date, end_date))
-#else:
- #   st.error('Error: End date must fall after start date.')
+start_date = st.date_input('Start date', datetime.datetime(2022, 11, 2, 0, 0, 0))
+end_date = st.date_input('End date', datetime.datetime(2022, 11, 7, 0, 0, 0))
+if start_date < end_date:
+    st.success('Start date: `%s`\n\nEnd date:`%s`' % (start_date, end_date))
+else:
+    st.error('Error: End date must fall after start date.')
+
+start_y, start_m, start_d = int(start_date.strftime('%Y')), int(start_date.strftime('%m')), int(start_date.strftime('%d'))
+end_y, end_m, end_d = int(end_date.strftime('%Y')), int(end_date.strftime('%m')), int(end_date.strftime('%d'))
+
+st.write(start_y, start_m, start_d)
+st.write(end_y, end_m, end_d)
+
+start_epoch = int(datetime.datetime(start_y, start_m, start_d, 0, 0, 0).timestamp())
+end_epoch = int(datetime.datetime(end_y, end_m, end_d, 0, 0, 0).timestamp())
+
+st.write(start_epoch)
+st.write(end_epoch)
 
 proceed = st.radio('Ready to go?', ['no','yes'], horizontal=True)
 
@@ -219,8 +219,7 @@ if proceed == 'yes':
     
     st.write('Getting data ...')
     
-    
-    df = comparePlanesDayArrDep(20221103, 20221107, IATA_AIRPORT)  ## !!!!!!!!!!!!!!!!!!!!
+    df = comparePlanesDayArrDep(start_epoch, end_epoch, IATA_AIRPORT)  ## !!!!!!!!!!!!!!!!!!!!
     
     st.dataframe(df)
     
