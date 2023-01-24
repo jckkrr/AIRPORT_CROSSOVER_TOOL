@@ -121,20 +121,14 @@ def comparePlanesDayArrDep(start_epoch, end_epoch, IATA_AIRPORT):
     
     ## most people will use a three digit airport code, not the four letter ICAO code, so first job is to covert
     ICAO_AIRPORT = hexdbioTools_convertIATAtoICAO(IATA_AIRPORT)
-        
-    st.write(ICAO_AIRPORT)
-        
+                
     # get daily arrival/depart data
-    
-    st.write(start_epoch, ICAO_AIRPORT)
-    
+        
     arrivals = openskyTools_getBasicDailyAirportArriveOrDepart(start_epoch, ICAO_AIRPORT, 'arrival')    
     arrivals = arrivals.loc[arrivals['originIcao'] != arrivals['destinationIcao']]  ## to exclude helicopters doing joy flights, for example
-    st.dataframe(arrivals.head(3))    
     
     departures = openskyTools_getBasicDailyAirportArriveOrDepart(end_epoch, ICAO_AIRPORT, 'departure')
     departures = departures.loc[departures['originIcao'] != departures['destinationIcao']]
-    st.dataframe(departures.head(3)) 
         
     callsigns_arr = arrivals['callsign'].to_list()
     callsigns_dep = departures['callsign'].to_list()
@@ -149,8 +143,6 @@ def comparePlanesDayArrDep(start_epoch, end_epoch, IATA_AIRPORT):
 
         dfARRMINI = arrivals.loc[arrivals['callsign'].isin(crossover_aircraft), ['callsign', 'icao24', 'Date', 'originIcao', 'lastSeen']].rename(columns={'Date': 'arrive_date', 'originIcao': 'arrived_from'})
 
-        st.write(dfARRMINI)
-
         dfDEPMINI = departures.loc[departures['callsign'].isin(crossover_aircraft), ['callsign', 'icao24', 'Date', 'destinationIcao', 'firstSeen', ]].rename(columns={'Date': 'depart_date', 'destinationIcao': 'departed_for'})  
 
         ### Get deatils about where they are coming from or going to
@@ -162,15 +154,7 @@ def comparePlanesDayArrDep(start_epoch, end_epoch, IATA_AIRPORT):
 
             dfOTHERAIRPORTS = pd.DataFrame()
 
-            st.write(col)
-
-            st.dataframe(df)
-
             for other_airport in df[col].unique():
-
-                st.write('!!!')
-
-                st.write(other_airport)
 
                 dfx = hexdbioTools_airportInfo(other_airport)
 
@@ -183,8 +167,6 @@ def comparePlanesDayArrDep(start_epoch, end_epoch, IATA_AIRPORT):
 
             dfOTHERAIRPORTS = dfOTHERAIRPORTS.reset_index(drop=True)
             dfOTHERAIRPORTS.columns = [f'{ARR_or_DEP}_{x}' for x in dfOTHERAIRPORTS.columns]
-
-            st.write(dfOTHERAIRPORTS)
 
             df = df.merge(dfOTHERAIRPORTS, left_on=col, right_on=f'{ARR_or_DEP}_icao')
 
