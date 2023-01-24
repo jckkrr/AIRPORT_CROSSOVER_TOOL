@@ -75,7 +75,10 @@ def openskyTools_getBasicDailyAirportArriveOrDepart(dayYYYYmmdd, airportIcao, ar
     
     df = pd.DataFrame()
             
-    dayEpoch = timeFuncs_returnEpoch(dayYYYYmmdd)
+    #dayEpoch = timeFuncs_returnEpoch(dayYYYYmmdd)
+    
+    dayEpoch = int(datetime.datetime.strptime(str(dayYYYYmmdd), "%Y%m%d").timestamp())
+    
     dateddmm = f'{str(dayYYYYmmdd)[6:8]}/{str(dayYYYYmmdd)[4:6]}/{str(dayYYYYmmdd)[0:4]}'
     
     st.write(dayEpoch)
