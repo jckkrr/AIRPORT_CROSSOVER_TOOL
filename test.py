@@ -79,25 +79,36 @@ def openskyTools_getBasicDailyAirportArriveOrDepart(dayYYYYmmdd, airportIcao, ar
     dateddmm = f'{str(dayYYYYmmdd)[6:8]}/{str(dayYYYYmmdd)[4:6]}/{str(dayYYYYmmdd)[0:4]}'
         
     url = f'https://opensky-network.org/api/flights/{arrival_or_departure}?airport={airportIcao}&begin={dayEpoch}&end={dayEpoch+86400}'
+    
+    st.write(url)
+    
     response = requests.request("GET", url) 
+    
+    st.write(url)
     
     if response.status_code != 200:
         print(response)
     
-    j = response.json()    
+    else:
     
-    for i in j:
-                
-        df.loc[j.index(i), ['Date', 'Date Epoch']] = [dayYYYYmmdd, dayEpoch] 
+        j = response.json()    
         
-        for key, val in i.items():
-            if type(val) == str:
-                val = val.strip()
-            df.loc[j.index(i), key] = val
-                        
-        df.loc[j.index(i), 'Source'] = 'OpenSky Network'
-        
-    df = df.rename(columns={'estDepartureAirport': 'originIcao', 'estArrivalAirport': 'destinationIcao'})
+        st.write(j)
+
+        for i in j:
+            
+            st.write(i)
+
+            df.loc[j.index(i), ['Date', 'Date Epoch']] = [dayYYYYmmdd, dayEpoch] 
+
+            for key, val in i.items():
+                if type(val) == str:
+                    val = val.strip()
+                df.loc[j.index(i), key] = val
+
+            df.loc[j.index(i), 'Source'] = 'OpenSky Network'
+
+        df = df.rename(columns={'estDepartureAirport': 'originIcao', 'estArrivalAirport': 'destinationIcao'})
     
     return df
 
