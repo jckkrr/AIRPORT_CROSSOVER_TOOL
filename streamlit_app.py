@@ -148,17 +148,13 @@ def comparePlanesDayArrDep(start_epoch, end_epoch, IATA_AIRPORT):
         ### Get deatils about where they are coming from or going to
         def getOtherAirportInfo(df, ARR_or_DEP):
 
-
             col = 'arrived_from' if ARR_or_DEP == 'ARR' else 'departed_for' if ARR_or_DEP == 'DEP' else None
-
 
             dfOTHERAIRPORTS = pd.DataFrame()
 
             for other_airport in df[col].unique():
 
                 dfx = hexdbioTools_airportInfo(other_airport)
-
-                st.write(dfx)
 
                 if f'{ARR_or_DEP}_icao' not in dfx.columns:
                     dfx['icao'] = other_airport
@@ -240,7 +236,8 @@ if proceed == 'yes':
     
     df = comparePlanesDayArrDep(start_epoch, end_epoch, IATA_AIRPORT)  ## !!!!!!!!!!!!!!!!!!!!
     
-    st.dataframe(df)
+    if df.shape[0] != 0:
+        st.dataframe(df)
     
     
 st.write('')
