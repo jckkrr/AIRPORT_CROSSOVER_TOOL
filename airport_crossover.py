@@ -1,26 +1,29 @@
-### streamlit run "C:\Users\Jack\Documents\Python_projects\aviation\aviation_tools\airport_crossover.py"
+### streamlit run "C:\Users\Jack\Documents\Python_projects\aviation\aviation_tools\test.py"
 
-from bs4 import BeautifulSoup
+#from bs4 import BeautifulSoup
 import datetime
 import json
 import pandas as pd
 import os
 from requests import get
+import re
 import requests
 import streamlit as st
+import pytz
 
-### Sub-functions
+####
 
 def scrapingTools_getSoup(url):
+    
+    ### this originally used bs4, but that wouln't deploy, so this has been altered slightly but kept the 'soup' name
     
     user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/602.2.14 (KHTML, like Gecko) Version/10.0.1 Safari/602.2.14'
     headers = {'User-Agent': user_agent,'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'}
     response = get(url, headers=headers)
-    soup = BeautifulSoup(response.text, 'lxml')
-
+    
+    soup = response.content.decode('ASCII')
+        
     return soup
-
-####
 
 def timeFuncs_returnEpoch(YYYYmmdd):
    
@@ -28,42 +31,34 @@ def timeFuncs_returnEpoch(YYYYmmdd):
     
     return epochTime
 
-####
-
 def hexdbioTools_convertIATAtoICAO(IATA):
     
     url = f'https://hexdb.io/iata-icao?iata={IATA}'    
-    soup = scrapingTools.getSoup(url)
-    ICAO_AIRPORT = soup.find('p').text
+    ICAO_AIRPORT = scrapingTools_getSoup(url)
     
     return ICAO_AIRPORT
 
-####
-
+    
 def hexdbioTools_airportInfo(ICAO_AIRPORT):
     
-    url = f'https://hexdb.io/api/v1/airport/icao/{ICAO_AIRPORT}'    
-    soup = scrapingTools_getSoup(url)
-    jl = json.loads(soup.find('p').text)
+    url = f'https://hexdb.io/api/v1/airport/icao/{ICAO_AIRPORT}'        
+    soup = scrapingTools_getSoup(url)    
+    jl = json.loads(soup)
     df = pd.DataFrame.from_dict(jl, orient="index").T
-           
+    
     return df
-
-#### 
 
 def hexdbioTools_aircraftInfo(ICAOHEX, getImageUrl):
         
     url = f'https://hexdb.io/api/v1/aircraft/{ICAOHEX}'
     soup = scrapingTools_getSoup(url)
-    jl = json.loads(soup.find('p').text)
+    jl = json.loads(soup)
     df = pd.DataFrame.from_dict(jl, orient="index").T
     
     if getImageUrl == True:                          ## this can take a while for some reason
         df['image_url'] = imageRetrieval(ICAOHEX)
     
     return df
-
-#####
 
 def hexdbioTools_aicraftInfo_multi(list_of_icaohex):
     
@@ -76,72 +71,69 @@ def hexdbioTools_aicraftInfo_multi(list_of_icaohex):
     df = df.reset_index(drop=True)
     
     return df 
-
-#####
-
-def hexdbioTools_convertIATAtoICAO(IATA):
     
-    url = f'https://hexdb.io/iata-icao?iata={IATA}'    
-    soup = scrapingTools_getSoup(url)
-    ICAO_AIRPORT = soup.find('p').text
-    
-    return ICAO_AIRPORT
-
-####
-
-def openskyTools_getBasicDailyAirportArriveOrDepart(dayYYYYmmdd, airportIcao, arrival_or_departure):
+def openskyTools_getBasicDailyAirportArriveOrDepart(dayEpoch, airportIcao, arrival_or_departure):
     
     df = pd.DataFrame()
+                        
+    yyyymmdd = datetime.datetime.fromtimestamp(dayEpoch).strftime('%Y%m%d')
+    dateddmm = datetime.datetime.fromtimestamp(dayEpoch).strftime('%Y/%m/%d') 
         
-    dayEpoch = timeFuncs_returnEpoch(dayYYYYmmdd)
-    dateddmm = f'{str(dayYYYYmmdd)[6:8]}/{str(dayYYYYmmdd)[4:6]}/{str(dayYYYYmmdd)[0:4]}'
-    
-    print(dateddmm, end='\t\t')
-    
-    print('Accessing API data. ', end=' ')
     url = f'https://opensky-network.org/api/flights/{arrival_or_departure}?airport={airportIcao}&begin={dayEpoch}&end={dayEpoch+86400}'
-    response = requests.request("GET", url) 
     
+    st.write(url)
+    
+    response = requests.request("GET", url) 
+        
     if response.status_code != 200:
         print(response)
     
-    j = response.json()    
-    print(f'{len(j)} entries: ', end='')
+    else:
     
-    for i in j:
+        j = response.json()    
         
-        print('.', end='')
-        
-        df.loc[j.index(i), ['Date', 'Date Epoch']] = [dayYYYYmmdd, dayEpoch] 
-        
-        for key, val in i.items():
-            if type(val) == str:
-                val = val.strip()
-            df.loc[j.index(i), key] = val
-                        
-        df.loc[j.index(i), 'Source'] = 'OpenSky Network'
-        
-    df = df.rename(columns={'estDepartureAirport': 'originIcao', 'estArrivalAirport': 'destinationIcao'})
+        st.write(len(j))
+
+        for i in j:
+            
+            df.loc[j.index(i), ['yyyymmdd', 'Date', 'Date Epoch']] = [yyyymmdd, dateddmm, dayEpoch] 
+
+            for key, val in i.items():
+                if type(val) == str:
+                    val = val.strip()
+                df.loc[j.index(i), key] = val
+
+            df.loc[j.index(i), 'Source'] = 'OpenSky Network'
+
+        df = df.rename(columns={'estDepartureAirport': 'originIcao', 'estArrivalAirport': 'destinationIcao'})
     
     return df
 
 ####
 
 
+
 #### MAIN FUNCTION
 
-def comparePlanesDayArrDep(arrive_yyyymmdd, depart_yyyymmdd, IATA_AIRPORT_CODE):
+def comparePlanesDayArrDep(start_epoch, end_epoch, IATA_AIRPORT):
     
     ## most people will use a three digit airport code, not the four letter ICAO code, so first job is to covert
-    ICAO_AIRPORT = hexdbioTools_convertIATAtoICAO(IATA_AIRPORT_CODE)
-    
+    ICAO_AIRPORT = hexdbioTools_convertIATAtoICAO(IATA_AIRPORT)
+        
+    st.write(ICAO_AIRPORT)
+        
     # get daily arrival/depart data
-    arrivals = openskyTools_getBasicDailyAirportArriveOrDepart(arrive_yyyymmdd, ICAO_AIRPORT, 'arrival')
-    arrivals = arrivals.loc[arrivals['originIcao'] != arrivals['destinationIcao']]  ## to exclude helicopters doing joy flights, for example
-    print()
-    departures = openskyTools_getBasicDailyAirportArriveOrDepart(depart_yyyymmdd, ICAO_AIRPORT, 'departure')
-    departures = departures.loc[departures['originIcao'] != departures['destinationIcao']]
     
+    st.write(start_epoch, ICAO_AIRPORT)
+    
+    arrivals = openskyTools_getBasicDailyAirportArriveOrDepart(start_epoch, ICAO_AIRPORT, 'arrival')    
+    arrivals = arrivals.loc[arrivals['originIcao'] != arrivals['destinationIcao']]  ## to exclude helicopters doing joy flights, for example
+    st.dataframe(arrivals.head(3))    
+    
+    departures = openskyTools_getBasicDailyAirportArriveOrDepart(end_epoch, ICAO_AIRPORT, 'departure')
+    departures = departures.loc[departures['originIcao'] != departures['destinationIcao']]
+    st.dataframe(departures.head(3)) 
+        
     callsigns_arr = arrivals['callsign'].to_list()
     callsigns_dep = departures['callsign'].to_list()
     crossover_aircraft = [x for x in callsigns_arr if x in callsigns_dep]
@@ -150,8 +142,9 @@ def comparePlanesDayArrDep(arrive_yyyymmdd, depart_yyyymmdd, IATA_AIRPORT_CODE):
     
     dfARRMINI = arrivals.loc[arrivals['callsign'].isin(crossover_aircraft), ['callsign', 'icao24', 'Date', 'originIcao', 'lastSeen']].rename(columns={'Date': 'arrive_date', 'originIcao': 'arrived_from'})
     
-    dfDEPMINI = departures.loc[departures['callsign'].isin(crossover_aircraft), ['callsign', 'icao24', 'Date', 'destinationIcao', 'firstSeen', ]].rename(columns={'Date': 'depart_date', 'destinationIcao': 'departed_for'})  
     
+    dfDEPMINI = departures.loc[departures['callsign'].isin(crossover_aircraft), ['callsign', 'icao24', 'Date', 'destinationIcao', 'firstSeen', ]].rename(columns={'Date': 'depart_date', 'destinationIcao': 'departed_for'})  
+        
     ### Get deatils about where they are coming from or going to
     def getOtherAirportInfo(df, ARR_or_DEP):
 
@@ -159,9 +152,9 @@ def comparePlanesDayArrDep(arrive_yyyymmdd, depart_yyyymmdd, IATA_AIRPORT_CODE):
 
         dfOTHERAIRPORTS = pd.DataFrame()
         for other_airport in df[col].unique():
-            
+                    
             dfx = hexdbioTools_airportInfo(other_airport)
-            
+                        
             if f'{ARR_or_DEP}_icao' not in dfx.columns:
                 dfx['icao'] = other_airport
             
@@ -195,37 +188,43 @@ def comparePlanesDayArrDep(arrive_yyyymmdd, depart_yyyymmdd, IATA_AIRPORT_CODE):
     return df
 
 
-#### 
-st.write('Constituent Investigative Analytics Studio')
+############################# RUN #############################
 
-st.write('# AIRPORT CROSSOVER TOOL #####')
+IATA_AIRPORT = st.text_input('Please enter the 3-letter IATA code for the aiport you are interested in: ', 'BQH')
+ICAO_AIRPORT = hexdbioTools_convertIATAtoICAO(IATA_AIRPORT)
 
-selected_airport = st.text_input('Please enter the 3-letter IATA code for the aiport you are interested in: ', 'BQH')
+st.write(ICAO_AIRPORT)
 
-selected_airport_icao = hexdbioTools_convertIATAtoICAO(selected_airport)
-
-if len(selected_airport) == 3:
-    df = hexdbioTools_airportInfo(selected_airport_icao)
-    st.dataframe(df)
-
-
-start_date = st.date_input('Start date', datetime.datetime(2022, 11, 3, 0, 0, 0))
+start_date = st.date_input('Start date', datetime.datetime(2022, 11, 2, 0, 0, 0))
 end_date = st.date_input('End date', datetime.datetime(2022, 11, 7, 0, 0, 0))
 if start_date < end_date:
     st.success('Start date: `%s`\n\nEnd date:`%s`' % (start_date, end_date))
 else:
     st.error('Error: End date must fall after start date.')
 
+start_y, start_m, start_d = int(start_date.strftime('%Y')), int(start_date.strftime('%m')), int(start_date.strftime('%d'))
+end_y, end_m, end_d = int(end_date.strftime('%Y')), int(end_date.strftime('%m')), int(end_date.strftime('%d'))
+
+st.write(start_y, start_m, start_d)
+st.write(end_y, end_m, end_d)
+
+start_epoch = int(datetime.datetime(start_y, start_m, start_d, 0, 0, 0, 0, pytz.UTC).timestamp())
+end_epoch = int(datetime.datetime(end_y, end_m, end_d, 0, 0, 0, 0, pytz.UTC).timestamp())
+
+st.write(start_epoch)
+st.write(end_epoch)
+
 proceed = st.radio('Ready to go?', ['no','yes'], horizontal=True)
 
 if proceed == 'yes':
     
-    st.write('Go!')
+    st.write('Getting data ...')
     
-    st.write(start_date)
-    st.write(end_date)
-    
-    df = comparePlanesDayArrDep(20221103, 20221107, 'BQH')
+    df = comparePlanesDayArrDep(start_epoch, end_epoch, IATA_AIRPORT)  ## !!!!!!!!!!!!!!!!!!!!
     
     st.dataframe(df)
     
+    
+st.write('')
+st.write('')
+st.write('&#11041; More tools at www.constituent.au')
