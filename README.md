@@ -25,7 +25,7 @@ The coincidences may be nothing, but this OSINT tool does give another possible 
 
 This tool is available to use in your browser thanks to Streamlit.
 
-https://jckkrr-whos-flying-in-to-meet-each-oth-airport-crossover-vrc65z.streamlit.app/#who-is-flying-in-to-meet-each-other
+https://jckkrr-airport-crossover-tool-streamlit-app-ttrh8c.streamlit.app/
 
 ![image](https://user-images.githubusercontent.com/69304112/214295740-8bfd1ed4-e608-4e1e-8bac-66d06773da5b.png)
 
