@@ -117,71 +117,96 @@ def openskyTools_getBasicDailyAirportArriveOrDepart(dayEpoch, airportIcao, arriv
 
 def comparePlanesDayArrDep(start_epoch, end_epoch, IATA_AIRPORT):
     
+    df = pd.DataFrame()
+    
     ## most people will use a three digit airport code, not the four letter ICAO code, so first job is to covert
     ICAO_AIRPORT = hexdbioTools_convertIATAtoICAO(IATA_AIRPORT)
         
-    #st.write(ICAO_AIRPORT)
+    st.write(ICAO_AIRPORT)
         
     # get daily arrival/depart data
     
-    #st.write(start_epoch, ICAO_AIRPORT)
+    st.write(start_epoch, ICAO_AIRPORT)
     
     arrivals = openskyTools_getBasicDailyAirportArriveOrDepart(start_epoch, ICAO_AIRPORT, 'arrival')    
     arrivals = arrivals.loc[arrivals['originIcao'] != arrivals['destinationIcao']]  ## to exclude helicopters doing joy flights, for example
+    st.dataframe(arrivals.head(3))    
     
     departures = openskyTools_getBasicDailyAirportArriveOrDepart(end_epoch, ICAO_AIRPORT, 'departure')
     departures = departures.loc[departures['originIcao'] != departures['destinationIcao']]
+    st.dataframe(departures.head(3)) 
         
     callsigns_arr = arrivals['callsign'].to_list()
     callsigns_dep = departures['callsign'].to_list()
     crossover_aircraft = [x for x in callsigns_arr if x in callsigns_dep]
-    print(crossover_aircraft)    
-    icao_hex_codes = [x for x in departures.loc[departures['callsign'].isin(crossover_aircraft), 'icao24'].unique()]
     
-    dfARRMINI = arrivals.loc[arrivals['callsign'].isin(crossover_aircraft), ['callsign', 'icao24', 'Date', 'originIcao', 'lastSeen']].rename(columns={'Date': 'arrive_date', 'originIcao': 'arrived_from'})
-    
-    
-    dfDEPMINI = departures.loc[departures['callsign'].isin(crossover_aircraft), ['callsign', 'icao24', 'Date', 'destinationIcao', 'firstSeen', ]].rename(columns={'Date': 'depart_date', 'destinationIcao': 'departed_for'})  
+    if len(crossover_aircraft) == 0:
+        st.write('No aircraft meet the criteria.')
         
-    ### Get deatils about where they are coming from or going to
-    def getOtherAirportInfo(df, ARR_or_DEP):
-
-        col = 'arrived_from' if ARR_or_DEP == 'ARR' else 'departed_for' if ARR_or_DEP == 'DEP' else None
-
-        dfOTHERAIRPORTS = pd.DataFrame()
-        for other_airport in df[col].unique():
-                    
-            dfx = hexdbioTools_airportInfo(other_airport)
-                        
-            if f'{ARR_or_DEP}_icao' not in dfx.columns:
-                dfx['icao'] = other_airport
-            
-            dfOTHERAIRPORTS = pd.concat([dfOTHERAIRPORTS, dfx])
-
-        dfOTHERAIRPORTS = dfOTHERAIRPORTS.reset_index(drop=True)
-        dfOTHERAIRPORTS.columns = [f'{ARR_or_DEP}_{x}' for x in dfOTHERAIRPORTS.columns]
-
-        df = df.merge(dfOTHERAIRPORTS, left_on=col, right_on=f'{ARR_or_DEP}_icao')
-
-        return df
-
-    dfARRMINI = getOtherAirportInfo(dfARRMINI, 'ARR')
-    dfDEPMINI = getOtherAirportInfo(dfDEPMINI, 'DEP')
+    else:
     
-    dfMINI = dfARRMINI.merge(dfDEPMINI, on = ['callsign', 'icao24']).rename(columns={'icao24': 'icaohex'})
-              
-        
-    ### Get info about aircraft     
-    dfAIRCRAFTINFO = hexdbioTools_aicraftInfo_multi(icao_hex_codes)
-    
-    df = dfAIRCRAFTINFO.merge(dfMINI, on = ['icaohex'])
-    
-    df['central_airport_icao'] = ICAO_AIRPORT
-    
-    order_cols = ['Registration', 'icaohex', 'RegisteredOwners', 'Manufacturer', 'Type', 'arrived_from', 'ARR_airport', 'ARR_country_code', 'departed_for', 'DEP_airport', 'DEP_country_code', 'ARR_iata', 'DEP_iata', 'arrive_date', 'lastSeen', 'depart_date', 'firstSeen', 'ARR_latitude', 'ARR_longitude', 'ARR_region_name', 'DEP_latitude', 'DEP_longitude', 'DEP_region_name', 'OperatorFlagCode', 'ICAOTypeCode', 'central_airport_icao']
-    display_cols = [x for x in order_cols if x in df.columns]
-        
-    df = df[display_cols]
+        icao_hex_codes = [x for x in departures.loc[departures['callsign'].isin(crossover_aircraft), 'icao24'].unique()]
+
+        dfARRMINI = arrivals.loc[arrivals['callsign'].isin(crossover_aircraft), ['callsign', 'icao24', 'Date', 'originIcao', 'lastSeen']].rename(columns={'Date': 'arrive_date', 'originIcao': 'arrived_from'})
+
+        st.write(dfARRMINI)
+
+        dfDEPMINI = departures.loc[departures['callsign'].isin(crossover_aircraft), ['callsign', 'icao24', 'Date', 'destinationIcao', 'firstSeen', ]].rename(columns={'Date': 'depart_date', 'destinationIcao': 'departed_for'})  
+
+        ### Get deatils about where they are coming from or going to
+        def getOtherAirportInfo(df, ARR_or_DEP):
+
+
+            col = 'arrived_from' if ARR_or_DEP == 'ARR' else 'departed_for' if ARR_or_DEP == 'DEP' else None
+
+
+            dfOTHERAIRPORTS = pd.DataFrame()
+
+            st.write(col)
+
+            st.dataframe(df)
+
+            for other_airport in df[col].unique():
+
+                st.write('!!!')
+
+                st.write(other_airport)
+
+                dfx = hexdbioTools_airportInfo(other_airport)
+
+                st.write(dfx)
+
+                if f'{ARR_or_DEP}_icao' not in dfx.columns:
+                    dfx['icao'] = other_airport
+
+                dfOTHERAIRPORTS = pd.concat([dfOTHERAIRPORTS, dfx])
+
+            dfOTHERAIRPORTS = dfOTHERAIRPORTS.reset_index(drop=True)
+            dfOTHERAIRPORTS.columns = [f'{ARR_or_DEP}_{x}' for x in dfOTHERAIRPORTS.columns]
+
+            st.write(dfOTHERAIRPORTS)
+
+            df = df.merge(dfOTHERAIRPORTS, left_on=col, right_on=f'{ARR_or_DEP}_icao')
+
+            return df
+
+        dfARRMINI = getOtherAirportInfo(dfARRMINI, 'ARR')
+        dfDEPMINI = getOtherAirportInfo(dfDEPMINI, 'DEP')
+
+        dfMINI = dfARRMINI.merge(dfDEPMINI, on = ['callsign', 'icao24']).rename(columns={'icao24': 'icaohex'})
+
+
+        ### Get info about aircraft     
+        dfAIRCRAFTINFO = hexdbioTools_aicraftInfo_multi(icao_hex_codes)
+
+        df = dfAIRCRAFTINFO.merge(dfMINI, on = ['icaohex'])
+
+        df['central_airport_icao'] = ICAO_AIRPORT
+
+        order_cols = ['Registration', 'icaohex', 'RegisteredOwners', 'Manufacturer', 'Type', 'arrived_from', 'ARR_airport', 'ARR_country_code', 'departed_for', 'DEP_airport', 'DEP_country_code', 'ARR_iata', 'DEP_iata', 'arrive_date', 'lastSeen', 'depart_date', 'firstSeen', 'ARR_latitude', 'ARR_longitude', 'ARR_region_name', 'DEP_latitude', 'DEP_longitude', 'DEP_region_name', 'OperatorFlagCode', 'ICAOTypeCode', 'central_airport_icao']
+        display_cols = [x for x in order_cols if x in df.columns]
+
+        df = df[display_cols]
 
     return df
 
