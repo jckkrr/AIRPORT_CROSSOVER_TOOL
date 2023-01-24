@@ -78,7 +78,7 @@ def openskyTools_getBasicDailyAirportArriveOrDepart(dayYYYYmmdd, airportIcao, ar
     dayEpoch = timeFuncs_returnEpoch(dayYYYYmmdd)
     dateddmm = f'{str(dayYYYYmmdd)[6:8]}/{str(dayYYYYmmdd)[4:6]}/{str(dayYYYYmmdd)[0:4]}'
     
-    st.write(dayYYYYmmdd)
+    st.write(dayEpoch)
     st.write(dateddmm)
         
     url = f'https://opensky-network.org/api/flights/{arrival_or_departure}?airport={airportIcao}&begin={dayEpoch}&end={dayEpoch+86400}'
