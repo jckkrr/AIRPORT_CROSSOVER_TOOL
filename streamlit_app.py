@@ -244,67 +244,7 @@ if proceed == 'yes':
     
     if df.shape[0] != 0:
         st.dataframe(df)
-    
-        ### 
-
-        try:
-            
-            import plotly.graph_objects as go
-
-            fig = go.Figure()
-
-            def addHub(hub_coords):
-
-                fig.add_trace(
-                    go.Scattergeo(
-                        lon = [hub_coords[2]],
-                        lat = [hub_coords[1]],
-                        mode = 'markers',
-                        marker = dict(
-                            size = 25,
-                            color = 'rgba(222,1,12,0.5)',
-                            symbol = 'x'
-                        ),
-                        text = [hub_coords[0]],
-                        hovertemplate='<extra></extra>%{text}',
-                    )
-                )
-
-            addHub(hub_coords) 
-
-            def addPoints(ARR_DEP, c):
-
-                from_to = 'Came from' if ARR_DEP == 'ARR' else 'Left for'
-
-                df[f'{ARR_DEP}_text'] = + df['Registration'] + '<br>' + df['RegisteredOwners'].apply(lambda x: f'<b><span style="font-size: 18px; color: black">{x}</span></b>') + '<br>' + df['Manufacturer'] + ' : ' + df['Type'] + '<br><br>' + from_to + ':<br>' + df[f'{ARR_DEP}_airport'] + ', ' + df[f'{ARR_DEP}_country_code'] 
-
-                fig.add_trace(
-                    go.Scattergeo(
-                        lon = df[f'{ARR_DEP}_longitude'],
-                        lat = df[f'{ARR_DEP}_latitude'],
-                        mode = 'markers',
-                        marker = dict(
-                            size = 25,
-                            color = c,
-                            symbol = 'hexagon'
-                        ),
-                        text = df[f'{ARR_DEP}_text'],
-                        hovertemplate='<extra></extra>%{text}',
-                    )
-                )
-
-            addPoints('ARR', 'rgba(120,1,233,0.5)')
-            addPoints('DEP', 'rgba(1,122,233,0.5)')
-
-            fig.update_layout(showlegend=False)
-            fig.update_layout(margin=dict(l=0,r=10,b=0,t=80))
-
-
-            st.plotly_chart(fig, use_container_width=True)
-
-        except:
-            pass
-            
+        
         for index, row in df.iterrows():
             
             icaohex = row['icaohex']
