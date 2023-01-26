@@ -1,4 +1,4 @@
-### streamlit run "C:\Users\Jack\Documents\Python_projects\aviation\aviation_tools\airport_crossover.py"
+### streamlit run "C:\Users\Jack\Documents\Python_projects\aviation\aviation_tools\streamlit_app.py"
 
 #from bs4 import BeautifulSoup
 import datetime
@@ -38,6 +38,15 @@ def hexdbioTools_convertIATAtoICAO(IATA):
     
     return ICAO_AIRPORT
 
+
+def hexdbioTools_imageRetrieval(ICAOHEX):
+    
+    image_url = None
+    url = f'https://hexdb.io/hex-image?hex={ICAOHEX}'
+    soup = scrapingTools_getSoup(url)
+    image_url = 'https:' +  soup
+    
+    return image_url
     
 def hexdbioTools_airportInfo(ICAO_AIRPORT):
     
@@ -207,7 +216,7 @@ ICAO_AIRPORT = hexdbioTools_convertIATAtoICAO(IATA_AIRPORT)
 dfAIRPORTINFO = hexdbioTools_airportInfo(hexdbioTools_convertIATAtoICAO(IATA_AIRPORT))
 st.dataframe(dfAIRPORTINFO)
 
-#st.write('ICAO 24 Hex code for airport: ', ICAO_AIRPORT)
+hub_coords = dfAIRPORTINFO['airport'].values[0], dfAIRPORTINFO['latitude'].values[0], dfAIRPORTINFO['longitude'].values[0]
 
 start_date = st.date_input('Start date', datetime.datetime(2022, 11, 2, 0, 0, 0))
 end_date = st.date_input('End date', datetime.datetime(2022, 11, 7, 0, 0, 0))
@@ -218,9 +227,6 @@ else:
 
 start_y, start_m, start_d = int(start_date.strftime('%Y')), int(start_date.strftime('%m')), int(start_date.strftime('%d'))
 end_y, end_m, end_d = int(end_date.strftime('%Y')), int(end_date.strftime('%m')), int(end_date.strftime('%d'))
-
-#st.write(start_y, start_m, start_d)
-#st.write(end_y, end_m, end_d)
 
 start_epoch = int(datetime.datetime(start_y, start_m, start_d, 0, 0, 0, 0, pytz.UTC).timestamp())
 end_epoch = int(datetime.datetime(end_y, end_m, end_d, 0, 0, 0, 0, pytz.UTC).timestamp())
@@ -239,7 +245,85 @@ if proceed == 'yes':
     if df.shape[0] != 0:
         st.dataframe(df)
     
+
     
+    
+        ### 
+
+        import plotly.graph_objects as go
+
+        fig = go.Figure()
+        
+        def addHub(hub_coords):
+                
+            fig.add_trace(
+                go.Scattergeo(
+                    lon = [hub_coords[2]],
+                    lat = [hub_coords[1]],
+                    mode = 'markers',
+                    marker = dict(
+                        size = 25,
+                        color = 'rgba(222,1,12,0.5)',
+                        symbol = 'x'
+                    ),
+                    text = [hub_coords[0]],
+                    hovertemplate='<extra></extra>%{text}',
+                )
+            )
+
+        addHub(hub_coords) 
+
+        def addPoints(ARR_DEP, c):
+            
+            from_to = 'Came from' if ARR_DEP == 'ARR' else 'Left for'
+            
+            df[f'{ARR_DEP}_text'] = + df['Registration'] + '<br>' + df['RegisteredOwners'].apply(lambda x: f'<b><span style="font-size: 18px; color: black">{x}</span></b>') + '<br>' + df['Manufacturer'] + ' : ' + df['Type'] + '<br><br>' + from_to + ':<br>' + df[f'{ARR_DEP}_airport'] + ', ' + df[f'{ARR_DEP}_country_code'] 
+
+            fig.add_trace(
+                go.Scattergeo(
+                    lon = df[f'{ARR_DEP}_longitude'],
+                    lat = df[f'{ARR_DEP}_latitude'],
+                    mode = 'markers',
+                    marker = dict(
+                        size = 25,
+                        color = c,
+                        symbol = 'hexagon'
+                    ),
+                    text = df[f'{ARR_DEP}_text'],
+                    hovertemplate='<extra></extra>%{text}',
+                )
+            )
+
+        addPoints('ARR', 'rgba(120,1,233,0.5)')
+        addPoints('DEP', 'rgba(1,122,233,0.5)')
+
+        fig.update_layout(showlegend=False)
+        fig.update_layout(margin=dict(l=0,r=10,b=0,t=80))
+        
+
+        st.plotly_chart(fig, use_container_width=True)
+        
+        for index, row in df.iterrows():
+            
+            icaohex = row['icaohex']
+            owner = row['RegisteredOwners']
+            manufacturer = row['Manufacturer']
+            make = row['Type']
+            rego = row['Registration']
+            
+            caption = f'{rego} | {owner}  | {manufacturer}, {make}'
+            st.write(caption)
+            
+            image_url = hexdbioTools_imageRetrieval(icaohex)
+            if image_url == None:
+                st.write('No image found')
+            else:
+                st.image(image_url, caption=icaohex)
+            
+            
+
+        ####
+
 st.write('')
 st.write('')
 st.write('&#11041; More tools at www.constituent.au')
